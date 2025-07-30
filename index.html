@@ -63,7 +63,6 @@
       transform: scale(1.05);
     }
 
-    /* Custom player styles */
     .top-left-player {
       position: fixed;
       top: 15px;
@@ -160,11 +159,9 @@
 
   <div class="top-left-player">
     <div class="custom-player">
-      <div id="trackTitle">🎵 Đang phát: ...</div>
+      <div id="trackTitle">🎵 Đang phát: Muộn rồi mà sao còn</div>
       <div class="controls">
-        <button id="btnPrev" title="Bài trước">⏮️</button>
         <button id="btnPlayPause" title="Phát / Tạm dừng">▶️</button>
-        <button id="btnNext" title="Bài kế tiếp">⏭️</button>
         <input type="range" id="seekBar" value="0" min="0" max="100" />
       </div>
     </div>
@@ -179,47 +176,37 @@
       <p><strong>Quê quán:</strong> Nam Đàn, Nghệ An, Việt Nam</p>
     </div>
     <div class="links">
-      <a href="https://facebook.com" target="_blank">Facebook</a>
+      <a href="https://www.facebook.com/Ensidy24102002/" target="_blank">Facebook</a>
       <a href="https://zalo.me" target="_blank">Zalo</a>
-      <a href="https://instagram.com" target="_blank">Instagram</a>
-      <a href="https://t.me" target="_blank">Telegram</a>
-      <a href="https://tiktok.com" target="_blank">TikTok</a>
+      <a href="https://www.instagram.com/endiii.02/" target="_blank">Instagram</a>
+      <a href="https://t.me/Ensidy2002" target="_blank">Telegram</a>
+      <a href="https://www.tiktok.com/@...endiii_02" target="_blank">TikTok</a>
     </div>
   </div>
 
-  <audio id="audioPlayer" preload="auto"></audio>
+  <!-- Audio chỉ dùng 1 bài, lặp lại -->
+  <audio id="audioPlayer" src="music/muon_roi_ma_sao_con.mp3" preload="auto" loop></audio>
 
   <script>
-    const playlist = [
-      { src: 'music/muon_roi_ma_sao_con.mp3', title: 'Muộn rồi mà sao còn' },
-      { src: 'music/song2.mp3', title: 'Bài hát số 2' },
-      { src: 'music/song3.mp3', title: 'Bài hát số 3' }
-    ];
-
-    let currentIndex = 0;
     const audio = document.getElementById('audioPlayer');
     const btnPlayPause = document.getElementById('btnPlayPause');
-    const btnPrev = document.getElementById('btnPrev');
-    const btnNext = document.getElementById('btnNext');
     const seekBar = document.getElementById('seekBar');
-    const trackTitle = document.getElementById('trackTitle');
 
-    function loadTrack(index) {
-      if (index < 0) index = playlist.length - 1;
-      else if (index >= playlist.length) index = 0;
-      currentIndex = index;
-
-      audio.src = playlist[currentIndex].src;
-      trackTitle.textContent = '🎵 Đang phát: ' + playlist[currentIndex].title;
-      audio.load();
-      audio.play();
-      btnPlayPause.textContent = '⏸️';
-    }
-
-    audio.addEventListener('ended', () => {
-      loadTrack(currentIndex + 1);
+    // Cập nhật trạng thái thanh tiến trình
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        seekBar.value = (audio.currentTime / audio.duration) * 100;
+      }
     });
 
+    // Cho phép tua bài
+    seekBar.addEventListener('input', () => {
+      if (audio.duration) {
+        audio.currentTime = (seekBar.value / 100) * audio.duration;
+      }
+    });
+
+    // Nút play/pause
     btnPlayPause.addEventListener('click', () => {
       if (audio.paused) {
         audio.play();
@@ -230,27 +217,16 @@
       }
     });
 
-    btnPrev.addEventListener('click', () => {
-      loadTrack(currentIndex - 1);
+    // Tự động phát khi mở trang
+    window.addEventListener('DOMContentLoaded', () => {
+      audio.play().then(() => {
+        btnPlayPause.textContent = '⏸️';
+      }).catch(() => {
+        btnPlayPause.textContent = '▶️';
+      });
     });
 
-    btnNext.addEventListener('click', () => {
-      loadTrack(currentIndex + 1);
-    });
-
-    audio.addEventListener('timeupdate', () => {
-      if (audio.duration) {
-        seekBar.value = (audio.currentTime / audio.duration) * 100;
-      }
-    });
-
-    seekBar.addEventListener('input', () => {
-      if (audio.duration) {
-        audio.currentTime = (seekBar.value / 100) * audio.duration;
-      }
-    });
-
-    // Đồng hồ hiện giờ
+    // Đồng hồ hiển thị thời gian
     function updateClock() {
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, '0');
@@ -260,9 +236,6 @@
     }
     setInterval(updateClock, 1000);
     updateClock();
-
-    // Load bài đầu tiên khi trang mở
-    loadTrack(currentIndex);
   </script>
 
 </body>
