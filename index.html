@@ -153,10 +153,45 @@
       color: #fff;
       user-select: none;
     }
+
+    #clickToPlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    #clickToPlay button {
+      padding: 12px 24px;
+      font-size: 18px;
+      background: #ff9a9e;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    #clickToPlay button:hover {
+      background: #ff6f91;
+    }
   </style>
 </head>
 <body>
 
+  <!-- Màn hình overlay nếu autoplay bị chặn -->
+  <div id="clickToPlay" style="display: none;">
+    <p>🎵 Nhấn vào đây để bắt đầu phát nhạc</p>
+    <button>Bắt đầu</button>
+  </div>
+
+  <!-- Player điều khiển -->
   <div class="top-left-player">
     <div class="custom-player">
       <div id="trackTitle">🎵 Đang phát: Muộn rồi mà sao còn</div>
@@ -168,6 +203,7 @@
     <div class="clock" id="clock"></div>
   </div>
 
+  <!-- Thông tin cá nhân -->
   <div class="container">
     <img src="IMG_20250501_211319_388.jpg" alt="Ảnh cá nhân" class="avatar" />
     <div class="info">
@@ -177,33 +213,40 @@
     </div>
     <div class="links">
       <a href="https://www.facebook.com/Ensidy24102002/" target="_blank">Facebook</a>
-      <a href="https://zalo.me" target="_blank">Zalo</a>
+      <a href="https://www.youtube.com/@ENDiii02" target="_blank">YouTuBe</a>
       <a href="https://www.instagram.com/endiii.02/" target="_blank">Instagram</a>
       <a href="https://t.me/Ensidy2002" target="_blank">Telegram</a>
       <a href="https://www.tiktok.com/@...endiii_02" target="_blank">TikTok</a>
     </div>
   </div>
 
-  <!-- Audio chỉ dùng 1 bài, lặp lại -->
-  <audio id="audioPlayer" src="music/muon_roi_ma_sao_con.mp3" preload="auto" loop></audio>
+  <!-- Audio 1 bài lặp lại -->
+  <audio id="audioPlayer" src="music/muon_roi_ma_sao_con.mp3" preload="auto" loop muted></audio>
 
   <script>
     const audio = document.getElementById('audioPlayer');
     const btnPlayPause = document.getElementById('btnPlayPause');
     const seekBar = document.getElementById('seekBar');
+    const overlay = document.getElementById('clickToPlay');
 
-    // Cập nhật trạng thái thanh tiến trình
-    audio.addEventListener('timeupdate', () => {
-      if (audio.duration) {
-        seekBar.value = (audio.currentTime / audio.duration) * 100;
-      }
+    // Phát thử tự động
+    window.addEventListener('DOMContentLoaded', () => {
+      audio.play().then(() => {
+        audio.muted = false;
+        btnPlayPause.textContent = '⏸️';
+      }).catch(() => {
+        // Nếu bị chặn, hiển thị overlay yêu cầu user click
+        overlay.style.display = 'flex';
+      });
     });
 
-    // Cho phép tua bài
-    seekBar.addEventListener('input', () => {
-      if (audio.duration) {
-        audio.currentTime = (seekBar.value / 100) * audio.duration;
-      }
+    // Khi user nhấn nút trên overlay
+    overlay.addEventListener('click', () => {
+      audio.muted = false;
+      audio.play().then(() => {
+        btnPlayPause.textContent = '⏸️';
+        overlay.style.display = 'none';
+      });
     });
 
     // Nút play/pause
@@ -217,22 +260,26 @@
       }
     });
 
-    // Tự động phát khi mở trang
-    window.addEventListener('DOMContentLoaded', () => {
-      audio.play().then(() => {
-        btnPlayPause.textContent = '⏸️';
-      }).catch(() => {
-        btnPlayPause.textContent = '▶️';
-      });
+    // Thanh tua
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        seekBar.value = (audio.currentTime / audio.duration) * 100;
+      }
     });
 
-    // Đồng hồ hiển thị thời gian
+    seekBar.addEventListener('input', () => {
+      if (audio.duration) {
+        audio.currentTime = (seekBar.value / 100) * audio.duration;
+      }
+    });
+
+    // Đồng hồ thời gian
     function updateClock() {
       const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${h}:${m}:${s}`;
     }
     setInterval(updateClock, 1000);
     updateClock();
